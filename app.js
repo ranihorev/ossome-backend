@@ -1,0 +1,117 @@
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+const mongoose = require('mongoose');
+const session = require('cookie-session');
+const helmet = require('helmet')
+
+const passport = require('passport')
+const passportJWT = require("passport-jwt");
+
+// requires the model with Passport-Local Mongoose plugged in
+const User = require('./models/Users');
+
+mongoose.connect('mongodb://localhost/ossome', { useNewUrlParser: true });
+
+const postsRouter = require('./routes/v1/posts');
+const usersRouter = require('./routes/v1/users');
+const cors = require("cors");
+
+var app = express();
+
+app.use(logger('dev'));
+require('dotenv').config({path: `.env.${app.get('env')}`});
+
+var whitelist = ['http://localhost:5000']
+var corsOptions = {
+  origin: function (origin, callback) {
+    if (whitelist.indexOf(origin) !== -1) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  },
+  optionsSuccessStatus: 200
+};
+
+// Then pass them to cors:
+app.use(cors());
+
+app.use(express.json());
+app.use(helmet())
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
+// app.use(session({
+//   keys: ['secretkey1', 'secretkey2'],
+//   maxAge: 365 * 24 * 60 * 60 * 1000 // 24 hours
+// }));
+
+
+// Configure passport middleware
+app.use(passport.initialize());
+// app.use(passport.session());
+
+// use static authenticate method of model in LocalStrategy
+passport.use(User.createStrategy());
+
+const JWTStrategy   = passportJWT.Strategy;
+const ExtractJWT = passportJWT.ExtractJwt;
+
+passport.use(new JWTStrategy({
+    jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
+    secretOrKey   : process.env.SECRET_KEY
+  },
+  function (jwtPayload, cb) {
+
+    //find the user in db if needed. This functionality may be omitted if you store everything you'll need in JWT payload.
+    return User.findById(jwtPayload.id)
+      .then(user => {
+        return cb(null, user);
+      })
+      .catch(err => {
+        return cb(err);
+      });
+  }
+));
+
+
+
+// use static serialize and deserialize of model for passport session support
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+
+// app.use('/', postsRouter);
+app.use('/v1/posts', postsRouter);
+app.use('/v1/users', usersRouter);
+
+// catch 404 and forward to error handler
+app.use(function(req, res, next) {
+  next(createError(404));
+});
+
+// error handler
+if (app.get('env') === 'development') {
+  app.use(function(err, req, res, next) {
+    res.status(err.status || 500);
+    res.send({
+      message: err.message,
+      error: err
+    });
+  });
+}
+
+// production error handler
+// no stacktraces leaked to user
+app.use(function(err, req, res, next) {
+  res.status(err.status || 500);
+  res.send({
+    message: err.message,
+    error: {}
+  });
+});
+
+module.exports = app;
