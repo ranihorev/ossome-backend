@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "start": "NODE_ENV=production node ./bin/www",
+    "forever": "NODE_ENV=production forever ./bin/www",
     "debug": "nodemon --inspect ./bin/www"
   },
   "dependencies": {
