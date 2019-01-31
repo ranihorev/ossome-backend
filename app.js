@@ -4,7 +4,6 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const mongoose = require('mongoose');
-const session = require('cookie-session');
 const helmet = require('helmet')
 
 const passport = require('passport')
@@ -13,16 +12,17 @@ const passportJWT = require("passport-jwt");
 // requires the model with Passport-Local Mongoose plugged in
 const User = require('./models/Users');
 
-mongoose.connect('mongodb://localhost/ossome', { useNewUrlParser: true });
 
-const postsRouter = require('./routes/v1/posts');
-const usersRouter = require('./routes/v1/users');
 const cors = require("cors");
 
 var app = express();
+require('dotenv').config({path: `.env.${app.get('env')}`});
+const postsRouter = require('./routes/v1/posts');
+const usersRouter = require('./routes/v1/users');
 
 app.use(logger('dev'));
-require('dotenv').config({path: `.env.${app.get('env')}`});
+
+mongoose.connect('mongodb://localhost/ossome', { useNewUrlParser: true });
 
 var whitelist = ['http://localhost:5000']
 var corsOptions = {
