@@ -37,6 +37,22 @@ router.post('/', passport.authenticate('jwt'), async function(req, res) {
   res.send({message: 'success', post: post});
 });
 
+router.delete('/post/:postId', passport.authenticate('jwt'), async function(req, res) {
+  try {
+    const post = await Post.findById(req.params.postId);
+    if (req.user._id.toString() !== post.user._id.toString())
+      return res.status(401).send({message: 'Unauthorized to delete post'});
+    try {
+      await post.remove();
+    } catch (e) {
+      return res.status(500).send({message: 'Internal Error'})
+    }
+    res.send({message: 'Post was deleted'});
+  } catch (e) {
+    return res.status(404).send({message: 'Post not found'});
+  }
+});
+
 function getTimeStamp() {
   const today = new Date();
   const round_today = new Date(today.getFullYear(), today.getMonth(), today.getDate(), today.getHours(), 0, 0);

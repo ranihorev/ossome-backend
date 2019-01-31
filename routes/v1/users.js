@@ -40,7 +40,7 @@ router.post('/register', async function(req, res, next) {
     if ( ! err ){
       console.log('user registered!');
       const token = jwt.sign({ id: user.id, email: user.email}, process.env.SECRET_KEY);
-      return res.json({email: user.email, first_name:user.first_name, last_name: user.last_name, token});
+      return res.json({id: user.id, email: user.email, first_name:user.first_name, last_name: user.last_name, token});
     } else {
       res.status(500).send({message: 'Failed to login', details: err.message});
     }
@@ -62,7 +62,7 @@ router.post('/login', function(req, res) {
       });
     };
     const token = jwt.sign({ id: user.id, email: user.email}, process.env.SECRET_KEY);
-    return res.json({email: user.email, first_name:user.first_name, last_name: user.last_name, token});
+    return res.json({id: user.id, email: user.email, first_name:user.first_name, last_name: user.last_name, token});
   })(req, res);
 });
 
