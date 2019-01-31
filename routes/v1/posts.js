@@ -11,7 +11,7 @@ const googleMapsClient = require('@google/maps').createClient({
 });
 
 router.get('/', passport.authenticate('jwt'), async function(req, res) {
-  const posts = await Post.find().sort('-date');
+  const posts = await Post.find().sort({date_published: -1});
   res.send({posts: posts});
 });
 
@@ -33,8 +33,8 @@ router.post('/', passport.authenticate('jwt'), async function(req, res) {
     text: text,
     raw_content: req.body.content
   });
-  const output = await post.save();
-  res.send({message: 'success'});
+  await post.save();
+  res.send({message: 'success', post: post});
 });
 
 function getTimeStamp() {
