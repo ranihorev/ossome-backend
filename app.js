@@ -16,6 +16,9 @@ const User = require('./models/Users');
 const cors = require("cors");
 
 var app = express();
+
+console.log('Starting server');
+
 require('dotenv').config({path: `.env.${app.get('env')}`});
 const postsRouter = require('./routes/v1/posts');
 const usersRouter = require('./routes/v1/users');
@@ -31,10 +34,6 @@ app.use(helmet())
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-// app.use(session({
-//   keys: ['secretkey1', 'secretkey2'],
-//   maxAge: 365 * 24 * 60 * 60 * 1000 // 24 hours
-// }));
 
 
 // Configure passport middleware
@@ -102,3 +101,5 @@ app.use(function(err, req, res, next) {
 });
 
 module.exports = app;
+
+console.log('Finished loading server');
