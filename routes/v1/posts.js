@@ -49,7 +49,7 @@ router.get('/autocomplete_places/', passport.authenticate('jwt'), function(req, 
   if (!loc || loc.length <= 1) return res.send([]);
   googleMapsClient.placesAutoComplete({input: loc, sessiontoken: `${req.user._id.toString()}_${getTimeStamp()}`}).asPromise()
     .then((response) => {
-      res.send(response.json.predictions.map((loc) => {return {id: loc.id, text: loc.description}}));
+      res.send(response.json.predictions.map((loc) => {return {id: loc.place_id, text: loc.description}}));
     }).catch((err) => {
     res.status(500).json({message: 'Failed to fetch autocomplete options'});
   })
