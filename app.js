@@ -22,22 +22,9 @@ const usersRouter = require('./routes/v1/users');
 
 app.use(logger('dev'));
 
-mongoose.connect('mongodb://localhost/ossome', { useNewUrlParser: true });
+mongoose.connect(`mongodb://${process.env.MONGODB_PATH}`, { useNewUrlParser: true });
 
-var whitelist = ['http://localhost:5000']
-var corsOptions = {
-  origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1) {
-      callback(null, true)
-    } else {
-      callback(new Error('Not allowed by CORS'))
-    }
-  },
-  optionsSuccessStatus: 200
-};
-
-// Then pass them to cors:
-app.use(cors());
+app.use(cors()); // TODO look into it
 
 app.use(express.json());
 app.use(helmet())
