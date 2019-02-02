@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "start": "NODE_ENV=production node ./bin/www",
-    "forever": "NODE_ENV=production forever ./bin/www -m 5 -l forever.log",
-    "reforever": "NODE_ENV=production forever restart ./bin/www -m 5 -l forever.log",
+    "forever": "NODE_ENV=production forever -m 5 -l forever.log -a ./bin/www",
+    "reforever": "NODE_ENV=production forever restart -m 5 -l forever.log -a ./bin/www",
     "debug": "nodemon --inspect ./bin/www"
   },
   "dependencies": {
