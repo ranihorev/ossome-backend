@@ -14,6 +14,11 @@ const Post = new Schema({
     text:{type: String, maxlength: 500},
     id:{type: String, maxlength: 50},
   },
+  movie: {
+    title:{type: String, maxlength: 500},
+    id:{type: String, maxlength: 50},
+    type:{type: String, maxlength: 50},
+  },
   images: {type: [{type: String}]},
   text: {type: String},
   raw_content: {type: mongoose.Mixed, required: true},

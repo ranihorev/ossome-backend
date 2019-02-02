@@ -9,7 +9,7 @@ const multerS3 = require('multer-s3');
 const aws = require('aws-sdk');
 const randomstring = require("randomstring");
 const path = require('path');
-
+const axios = require('axios');
 
 const generate_name = (file) => {
   const name = randomstring.generate({length: 16, charset: 'alphabetic'});
@@ -70,7 +70,7 @@ router.get('/', passport.authenticate('jwt'), async function(req, res) {
 router.post('/post/', [passport.authenticate('jwt'), upload.array('images', 3)], async function(req, res) {
   const user = await User.findById(req.user._id);
   const content = JSON.parse(req.body.content);
-  const {location, text} = content;
+  const {location, movie, text} = content;
   // TODO add validations
   let post = new Post({
     user: {
@@ -82,6 +82,11 @@ router.post('/post/', [passport.authenticate('jwt'), upload.array('images', 3)],
     location: {
       id: location.id,
       text: location.text,
+    },
+    movie: {
+      id: movie.id,
+      title: movie.title,
+      type: movie.type,
     },
     text: text,
     images: req.files.map((f) => f.key),
@@ -130,6 +135,20 @@ router.get('/autocomplete_places/', passport.authenticate('jwt'), function(req, 
       res.send(response.json.predictions.map((loc) => {return {id: loc.place_id, text: loc.description}}));
     }).catch((err) => {
     res.status(500).json({message: 'Failed to fetch autocomplete options'});
+  })
+});
+
+router.get('/search_movies/', passport.authenticate('jwt'), function(req, res) {
+  const q = req.query.q;
+  if (!q || q.length <= 3) return res.send([]);
+  axios.get('https://api.themoviedb.org/3/search/multi/', {params: {query: q, api_key: process.env.TMDB_KEY}}).then(data => {
+    const movies = data.data.results
+      .filter((m) => m.media_type !== 'person')
+      .map((m) => {
+        const title = (m.media_type === 'tv') ? m.name : m.title;
+        return {id: m.id, title: title, img: m.poster_path, type: m.media_type}
+    }).slice(0,10);
+    res.send(movies);
   })
 });
 
