@@ -18,6 +18,7 @@ const Post = new Schema({
     title:{type: String, maxlength: 500},
     id:{type: String, maxlength: 50},
     type:{type: String, maxlength: 50},
+    rating:{type: Number, min: 0, max: 5}
   },
   images: {type: [{type: String}]},
   text: {type: String},
