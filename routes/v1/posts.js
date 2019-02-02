@@ -9,8 +9,6 @@ const multerS3 = require('multer-s3');
 const aws = require('aws-sdk');
 const randomstring = require("randomstring");
 const path = require('path');
-const mongoose = require('mongoose');
-const os = require("os");
 
 
 const generate_name = (file) => {
