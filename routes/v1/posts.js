@@ -35,7 +35,7 @@ const storage_s3 = multerS3({
   },
   key: function (req, file, cb) {
     const d = new Date();
-    cb(null, `${d.getFullYear()}/${d.getMonth() + 1}/${generate_name(file)}`)
+    cb(null, `${process.env.S3_BASE_PATH}/${d.getFullYear()}/${d.getMonth() + 1}/${generate_name(file)}`)
   }
 })
 
