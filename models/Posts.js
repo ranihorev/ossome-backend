@@ -14,6 +14,7 @@ const Post = new Schema({
     text:{type: String, maxlength: 500},
     id:{type: String, maxlength: 50},
   },
+  images: {type: [{type: String}]},
   text: {type: String},
   raw_content: {type: mongoose.Mixed, required: true},
   version: {type: String, maxlength: 6, default: 'v1'}

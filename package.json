@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@google/maps": "^0.5.5",
+    "aws-sdk": "^2.395.0",
     "cookie-parser": "~1.4.3",
     "cookie-session": "^2.0.0-beta.3",
     "cors": "^2.8.5",
@@ -22,12 +23,16 @@
     "jsonwebtoken": "^8.4.0",
     "mongoose": "^5.4.6",
     "morgan": "~1.9.0",
+    "multer": "^1.4.1",
+    "multer-s3": "^2.9.0",
     "passport": "^0.4.0",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
     "passport-local-mongoose": "^5.0.1",
     "pug": "2.0.0-beta11",
-    "react-geolocated": "^2.4.0"
+    "randomstring": "^1.1.5",
+    "react-geolocated": "^2.4.0",
+    "sharp": "^0.21.3"
   },
   "devDependencies": {
     "nodemon": "^1.18.9"

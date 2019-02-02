@@ -8,6 +8,7 @@ const helmet = require('helmet')
 
 const passport = require('passport')
 const passportJWT = require("passport-jwt");
+const aws = require('aws-sdk');
 
 // requires the model with Passport-Local Mongoose plugged in
 const User = require('./models/Users');
@@ -20,6 +21,13 @@ var app = express();
 console.log('Starting server');
 
 require('dotenv').config({path: `.env.${app.get('env')}`});
+
+aws.config.update({
+  accessKeyId: process.env.S3_KEY,
+  secretAccessKey: process.env.S3_SECRET,
+  region: process.env.AWS_REGION
+});
+
 const postsRouter = require('./routes/v1/posts');
 const usersRouter = require('./routes/v1/users');
 
@@ -31,7 +39,7 @@ app.use(cors()); // TODO look into it
 
 app.use(express.json());
 app.use(helmet())
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
