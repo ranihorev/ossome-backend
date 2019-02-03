@@ -54,20 +54,35 @@ const googleMapsClient = require('@google/maps').createClient({
   Promise: Promise
 });
 
-function get_signed_images(images) {
+function getSignedImages(images) {
   return images.map((im) => s3.getSignedUrl('getObject', {Bucket: process.env.S3_BUCKET, Key: im, Expires: 60*60*24*7}));
 }
 
-router.get('/', passport.authenticate('jwt'), async function(req, res) {
-  const posts = await Post.find().sort({date_published: -1}).limit(20);
-  // const hostname = req.headers.host; (im) => `${hostname}/${im}`
+function normalizeQuery(params) {
+  let outParams = {};
+  if ('user' in params) {
+    outParams['user._id'] = params['user']
+  }
+  return outParams
+}
+
+async function fetch_posts(req, res) {
+  const q = normalizeQuery(req.query);
+  const posts = await Post.find(q).sort({date_published: -1}).limit(20);
   posts.forEach((p) => {
-    p.images = get_signed_images(p.images);
+    p.images = getSignedImages(p.images);
   });
   res.send({posts: posts});
+}
+
+router.all('/*', passport.authenticate('jwt'));
+
+router.get('/', async function(req, res) {
+  await fetch_posts(req, res);
 });
 
-router.post('/post/', [passport.authenticate('jwt'), upload.array('images', 3)], async function(req, res) {
+
+router.post('/post/', upload.array('images', 3), async function(req, res) {
   const user = await User.findById(req.user._id);
   const content = JSON.parse(req.body.content);
   const {location, movie, text} = content;
@@ -95,17 +110,17 @@ router.post('/post/', [passport.authenticate('jwt'), upload.array('images', 3)],
     version: 'v1'
   });
   await post.save();
-  post.images = get_signed_images(post.images);
+  post.images = getSignedImages(post.images);
   res.send({message: 'success', post: post});
 });
 
-router.post('/post/image', [passport.authenticate('jwt'), upload.array('images', 3)],  async function(req, res) {
+router.post('/post/image', upload.array('images', 3),  async function(req, res) {
   const images_data = req.files.map((f) => { return {key: f.path, user_id: req.user._id}});
   const images = await Image.insertMany(images_data);
   res.send(images.map((f) => f._id));
 });
 
-router.delete('/post/:postId', passport.authenticate('jwt'), async function(req, res) {
+router.delete('/post/:postId', async function(req, res) {
   try {
     const post = await Post.findById(req.params.postId);
     if (req.user._id.toString() !== post.user._id.toString())
@@ -127,7 +142,7 @@ function getTimeStamp() {
   return round_today / 1000;
 }
 
-router.get('/autocomplete_places/', passport.authenticate('jwt'), function(req, res) {
+router.get('/autocomplete_places/', function(req, res) {
   const loc = req.query.location;
   console.log(`${req.user._id.toString()}_${getTimeStamp()}`);
   if (!loc || loc.length <= 1) return res.send([]);
@@ -139,7 +154,7 @@ router.get('/autocomplete_places/', passport.authenticate('jwt'), function(req, 
   })
 });
 
-router.get('/search_movies/', passport.authenticate('jwt'), function(req, res) {
+router.get('/search_movies/', function(req, res) {
   const q = req.query.q;
   if (!q || q.length <= 3) return res.send([]);
   axios.get('https://api.themoviedb.org/3/search/multi/', {params: {query: q, api_key: process.env.TMDB_KEY}}).then(data => {
