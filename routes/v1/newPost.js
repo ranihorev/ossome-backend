@@ -8,8 +8,11 @@ const aws = require('aws-sdk');
 const randomstring = require("randomstring");
 const path = require('path');
 const axios = require('axios');
+const _ = require('lodash/core');
 
 const postUtils = require('./postUtils');
+
+const TMDB_PATH = `https://image.tmdb.org/t/p/w92`;
 
 const generate_name = (file) => {
   const name = randomstring.generate({length: 16, charset: 'alphabetic'});
@@ -57,7 +60,7 @@ const googleMapsClient = require('@google/maps').createClient({
 router.post('/post/', upload.array('images', 3), async function(req, res) {
   const user = await User.findById(req.user._id);
   const content = JSON.parse(req.body.content);
-  const {location, movie, text} = content;
+  const {location, movie, text, music} = content;
   // TODO add validations
   let post = new Post({
     user: {
@@ -68,6 +71,7 @@ router.post('/post/', upload.array('images', 3), async function(req, res) {
     post_type: req.body.post_type,
     location: location,
     movie: movie,
+    music: music,
     text: text,
     images: req.files.map((f) => f.key),
     raw_content: content,
@@ -109,9 +113,58 @@ router.get('/search_movies/', function(req, res) {
       .filter((m) => m.media_type !== 'person')
       .map((m) => {
         const title = (m.media_type === 'tv') ? m.name : m.title;
-        return {id: m.id, text: title, img: m.poster_path, type: m.media_type}
+        return {id: m.id, text: title, img: TMDB_PATH + m.poster_path, type: m.media_type}
       }).slice(0,10);
     res.send(movies);
+  })
+});
+
+function getArtists(artists) {
+  return artists.map((art) => {
+    return {name: art.name, url: art.external_urls && art.external_urls.spotify}
+  });
+}
+
+router.get('/search_music/', async function(req, res) {
+  let q = req.query.q;
+  if (!q || q.length <= 3) return res.send([]);
+  q += '*';
+  postUtils.spotifyApi.search(q, ['album,track,artist'], {limit: 5}).then(spotifyRes => {
+    const albums = spotifyRes.body.albums.items.map(item => {
+      return {
+        type: 'album',
+        id: item.id,
+        artist: getArtists(item.artists),
+        text: item.name,
+        url: item.external_urls && item.external_urls.spotify,
+        img: !_.isEmpty(item.images) && item.images[item.images.length-1].url
+      }
+    });
+
+    const artists = spotifyRes.body.artists.items.map(item => {
+      return {
+        type: 'artist',
+        id: item.id,
+        text: item.name,
+        url: item.external_urls && item.external_urls.spotify,
+        img: !_.isEmpty(item.images) && item.images[item.images.length-1].url
+      }
+    });
+
+    const tracks = spotifyRes.body.tracks.items.map(item => {
+      return {
+        type: 'track',
+        id: item.id,
+        artist: getArtists(item.artists),
+        text: item.name,
+        url: item.external_urls && item.external_urls.spotify,
+        img: !_.isEmpty(item.album) && !_.isEmpty(item.album.images) && item.album.images[item.album.images.length-1].url
+      }
+    });
+
+    res.send(artists.concat(albums, tracks));
+  }).catch(err => {
+    res.send([])
   })
 });
 

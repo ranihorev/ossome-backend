@@ -34,7 +34,9 @@
     "passport-local-mongoose": "^5.0.1",
     "pug": "2.0.0-beta11",
     "randomstring": "^1.1.5",
-    "react-geolocated": "^2.4.0"
+    "react-geolocated": "^2.4.0",
+    "spotify-web-api-node": "^4.0.0",
+    "winston": "^3.2.1"
   },
   "devDependencies": {
     "nodemon": "^1.18.9"

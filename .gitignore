@@ -1,3 +1,4 @@
 .env.production
 .env.development
 /public/uploads
+*.log

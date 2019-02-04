@@ -2,23 +2,24 @@ const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
-const logger = require('morgan');
+const morgan = require('morgan');
 const mongoose = require('mongoose');
 const helmet = require('helmet')
+const logger = require('./logger');
 
 const passport = require('passport')
 const passportJWT = require("passport-jwt");
 const aws = require('aws-sdk');
 
+
 // requires the model with Passport-Local Mongoose plugged in
 const User = require('./models/Users');
-
 
 const cors = require("cors");
 
 var app = express();
 
-console.log('Starting server');
+logger.log('info', 'Starting server');
 
 require('dotenv').config({path: `.env.${app.get('env')}`});
 
@@ -31,7 +32,7 @@ aws.config.update({
 const postsRouter = require('./routes/v1/posts');
 const usersRouter = require('./routes/v1/users');
 
-app.use(logger('dev'));
+app.use(morgan('combined'));
 
 mongoose.connect(`mongodb://${process.env.MONGODB_PATH}`, { useNewUrlParser: true });
 
@@ -110,4 +111,4 @@ app.use(function(err, req, res, next) {
 
 module.exports = app;
 
-console.log('Finished loading server');
+logger.log('info', 'Finished loading server');
