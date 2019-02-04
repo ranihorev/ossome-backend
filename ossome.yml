@@ -2,7 +2,7 @@ apps:
   - script: ./bin/www
     instances: 1
     exec_mode: cluster
-    watch  : true
+    watch  : false
     env:
       NODE_ENV: production
     env_dev:
