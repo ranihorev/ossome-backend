@@ -4,17 +4,19 @@ const Post = require('../../models/Posts');
 const passport = require("passport");
 
 const newPostRouter = require('./newPost');
+const newCommentRouter = require('./newComment');
 const postUtils = require('./postUtils');
 
 router.all('/*', passport.authenticate('jwt'));
 
 router.use('/', newPostRouter);
+router.use('/', newCommentRouter);
 
 router.get('/', async function(req, res) {
   await fetch_posts(req, res);
 });
 
-router.delete('/post/:postId', async function(req, res) {
+router.delete('/post/:postId/', async function(req, res) {
   try {
     const post = await Post.findById(req.params.postId);
     if (req.user._id.toString() !== post.user._id.toString())
@@ -30,9 +32,13 @@ router.delete('/post/:postId', async function(req, res) {
   }
 });
 
+router.post('/post/:postId/like',  async function(req, res) {
+  res.send({message: 'success'});
+});
+
 async function fetch_posts(req, res) {
   const q = postUtils.normalizeQuery(req.query);
-  const posts = await Post.find(q).sort({date_published: -1}).limit(20);
+  const posts = await Post.find(q, {raw_content: 0}).sort({date_published: -1}).limit(20);
   posts.forEach((p) => {
     p.images = postUtils.getSignedImages(p.images);
   });

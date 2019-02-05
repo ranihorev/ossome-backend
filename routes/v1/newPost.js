@@ -1,10 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Post = require('../../models/Posts');
-const User = require('../../models/Users');
 const multer = require('multer');
 const multerS3 = require('multer-s3');
-const aws = require('aws-sdk');
 const randomstring = require("randomstring");
 const path = require('path');
 const axios = require('axios');
@@ -58,15 +56,14 @@ const googleMapsClient = require('@google/maps').createClient({
 
 
 router.post('/post/', upload.array('images', 3), async function(req, res) {
-  const user = await User.findById(req.user._id);
   const content = JSON.parse(req.body.content);
   const {location, movie, text, music} = content;
   // TODO add validations
   let post = new Post({
     user: {
-      _id: user._id,
-      first_name: user.first_name,
-      last_name: user.last_name,
+      _id: req.user._id,
+      first_name: req.user.first_name,
+      last_name: req.user.last_name,
     },
     post_type: req.body.post_type,
     location: location,
