@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const _ = require('lodash/core');
 const Post = require('../../models/Posts');
+const randomstring = require("randomstring");
 
 router.post('/new_comment/', async function(req, res) {
   if (_.isEmpty(req.body.content) || _.isEmpty(req.body.content.text))
@@ -10,6 +11,7 @@ router.post('/new_comment/', async function(req, res) {
   try {
     const post = await Post.findById(req.body.post);
     const newComment = {
+      id: randomstring.generate({length: 16, charset: 'alphabetic'}),
       text: req.body.content.text,
       user: {
         _id: req.user._id,

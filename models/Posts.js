@@ -32,6 +32,7 @@ const Post = new Schema({
   raw_content: {type: mongoose.Mixed, required: true},
   version: {type: String, maxlength: 6, default: 'v1'},
   comments: [{
+    id: {type: String, maxlength: 20},
     text: {type: String, maxlength: 500},
     deleted: {type: Boolean, default: false},
     date_published: { type: Date, default: function(){return new Date().getTime()} },
