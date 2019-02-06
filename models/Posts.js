@@ -24,6 +24,11 @@ const Post = new Schema({
     rating:{type: Number, min: 0, max: 5},
     img:{type: String, maxlength: 500},
   },
+  food: {
+    text:{type: String, maxlength: 500},
+    id:{type: String, maxlength: 50},
+    rating:{type: Number, min: 0, max: 5}
+  },
   music: {
     type: mongoose.Mixed
   },

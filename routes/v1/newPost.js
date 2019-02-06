@@ -57,7 +57,7 @@ const googleMapsClient = require('@google/maps').createClient({
 
 router.post('/post/', upload.array('images', 3), async function(req, res) {
   const content = JSON.parse(req.body.content);
-  const {location, movie, text, music} = content;
+  const {location, movie, text, music, food} = content;
   // TODO add validations
   let post = new Post({
     user: {
@@ -69,6 +69,7 @@ router.post('/post/', upload.array('images', 3), async function(req, res) {
     location: location,
     movie: movie,
     music: music,
+    food: food,
     text: text,
     images: req.files.map((f) => f.key),
     raw_content: content,
