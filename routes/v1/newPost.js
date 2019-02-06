@@ -91,10 +91,12 @@ function getTimeStamp() {
 }
 
 router.get('/autocomplete_places/', function(req, res) {
-  const loc = req.query.q;
-  console.log(`${req.user._id.toString()}_${getTimeStamp()}`);
-  if (!loc || loc.length <= 1) return res.send([]);
-  googleMapsClient.placesAutoComplete({input: loc, sessiontoken: `${req.user._id.toString()}_${getTimeStamp()}`}).asPromise()
+  const q = req.query.q;
+  if (!q || q.length <= 1) return res.send([]);
+  let query = {input: q, sessiontoken: `${req.user._id.toString()}_${getTimeStamp()}`};
+  if (req.query.establishment === "1") query.types = ['establishment'];
+
+  googleMapsClient.placesAutoComplete(query).asPromise()
     .then((response) => {
       res.send(response.json.predictions.map((loc) => {return {id: loc.place_id, text: loc.description}}));
     }).catch((err) => {
