@@ -3,6 +3,8 @@ apps:
     instances: 1
     exec_mode: cluster
     watch  : false
+    error_file: error_logs.log
+    out_file: all_logs.log
     env:
       NODE_ENV: production
     env_dev:
