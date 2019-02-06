@@ -10,7 +10,9 @@ const _ = require('lodash/core');
 
 const postUtils = require('./postUtils');
 
-const TMDB_PATH = `https://image.tmdb.org/t/p/w92`;
+const TMDB_IM_PATH = `https://image.tmdb.org/t/p/w92`;
+const TMDB_PATH = 'https://www.themoviedb.org';
+const GOOGLE_MAPS_PATH = 'https://www.google.com/maps/search/?q=place_id:';
 
 const generate_name = (file) => {
   const name = randomstring.generate({length: 16, charset: 'alphabetic'});
@@ -99,7 +101,9 @@ router.get('/autocomplete_places/', function(req, res) {
 
   googleMapsClient.placesAutoComplete(query).asPromise()
     .then((response) => {
-      res.send(response.json.predictions.map((loc) => {return {id: loc.place_id, text: loc.description}}));
+      res.send(response.json.predictions.map((loc) => {
+        return {id: loc.place_id, text: loc.description, url: GOOGLE_MAPS_PATH + loc.place_id}
+      }));
     }).catch((err) => {
     res.status(500).json({message: 'Failed to fetch autocomplete options'});
   })
@@ -113,7 +117,8 @@ router.get('/search_movies/', function(req, res) {
       .filter((m) => m.media_type !== 'person')
       .map((m) => {
         const title = (m.media_type === 'tv') ? m.name : m.title;
-        return {id: m.id, text: title, img: TMDB_PATH + m.poster_path, type: m.media_type}
+        const url = `${TMDB_PATH}/${m.media_type}/${m.id}`;
+        return {id: m.id, text: title, img: TMDB_IM_PATH + m.poster_path, type: m.media_type, url: url}
       }).slice(0,10);
     res.send(movies);
   })

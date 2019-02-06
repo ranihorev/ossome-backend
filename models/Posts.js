@@ -15,7 +15,8 @@ const Post = new Schema({
   location: {
     text:{type: String, maxlength: 500},
     id:{type: String, maxlength: 50},
-    rating:{type: Number, min: 0, max: 5}
+    rating:{type: Number, min: 0, max: 5},
+    url:{type: String, maxlength: 500},
   },
   movie: {
     text:{type: String, maxlength: 500},
@@ -23,11 +24,13 @@ const Post = new Schema({
     type:{type: String, maxlength: 50},
     rating:{type: Number, min: 0, max: 5},
     img:{type: String, maxlength: 500},
+    url:{type: String, maxlength: 500},
   },
   food: {
     text:{type: String, maxlength: 500},
     id:{type: String, maxlength: 50},
-    rating:{type: Number, min: 0, max: 5}
+    rating:{type: Number, min: 0, max: 5},
+    url:{type: String, maxlength: 500},
   },
   music: {
     type: mongoose.Mixed
