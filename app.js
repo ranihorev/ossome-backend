@@ -91,6 +91,7 @@ app.use(function(req, res, next) {
 // error handler
 if (app.get('env') === 'development') {
   app.use(function(err, req, res, next) {
+    logger.log('error', err.message);
     res.status(err.status || 500);
     res.send({
       message: err.message,
@@ -102,6 +103,7 @@ if (app.get('env') === 'development') {
 // production error handler
 // no stacktraces leaked to user
 app.use(function(err, req, res, next) {
+  logger.log('error', err.message);
   res.status(err.status || 500);
   res.send({
     message: err.message,
