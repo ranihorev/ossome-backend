@@ -7,6 +7,7 @@ const randomstring = require("randomstring");
 const path = require('path');
 const axios = require('axios');
 const _ = require('lodash/core');
+const logger = require('../../logger')(__filename);
 
 const postUtils = require('./postUtils');
 
@@ -18,7 +19,7 @@ const generate_name = (file) => {
   const name = randomstring.generate({length: 16, charset: 'alphabetic'});
   const ext = path.extname(file.originalname);
   return name + ext
-}
+};
 
 const storage_local = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -39,7 +40,7 @@ const storage_s3 = multerS3({
     const d = new Date();
     cb(null, `${process.env.S3_BASE_PATH}/${d.getFullYear()}/${d.getMonth() + 1}/${generate_name(file)}`)
   }
-})
+});
 
 const image_filter = function (req, file, callback) {
   const ext = path.extname(file.originalname);
@@ -80,6 +81,7 @@ router.post('/post/', upload.array('images', 3), async function(req, res) {
   try {
     await post.save();
   } catch (e) {
+    logger.log('error', e);
     return res.status(500).send({message: 'Failed to save post'})
   }
   post.images = postUtils.getSignedImages(post.images);

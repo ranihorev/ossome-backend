@@ -11,15 +11,16 @@ const spotifyApi = new SpotifyWebApi({
 
 module.exports.normalizeQuery = function(params) {
   let outParams = {};
-  if ('user' in params) {
-    outParams['user._id'] = params['user']
-  }
+  if ('user' in params)
+    outParams['user._id'] = params['user'];
+  if ('activity' in params)
+    outParams[params['activity']] = { '$exists': true, '$ne': null };
   return outParams
-}
+};
 
 module.exports.getSignedImages = function(images) {
   return images.map((im) => s3.getSignedUrl('getObject', {Bucket: process.env.S3_BUCKET, Key: im, Expires: 60*60*24*7}));
-}
+};
 
 function fetchSpotifyToken() {
   spotifyApi.clientCredentialsGrant().then(

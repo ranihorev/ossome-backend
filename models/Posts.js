@@ -14,7 +14,7 @@ const Post = new Schema({
   post_type: {type: String, maxlength: 50, required: true},
   location: {
     text:{type: String, maxlength: 500},
-    id:{type: String, maxlength: 50},
+    id:{type: String, maxlength: 300},
     rating:{type: Number, min: 0, max: 5},
     url:{type: String, maxlength: 500},
   },
