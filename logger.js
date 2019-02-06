@@ -1,23 +1,33 @@
-const winston = require('winston');
+const { createLogger, format, transports } = require('winston');
+const { combine, timestamp, colorize, printf, label } = format;
+const path = require('path');
 
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.json(),
-  defaultMeta: { service: 'user-service' },
-  transports: [
-    new winston.transports.File({ filename: 'error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'combined.log' })
-  ]
-});
+const baseFromat = printf(info => `${info.timestamp} ${info.level} [${info.label}]: ${info.message}`);
 
-//
-// If we're not in production then log to the `console` with the format:
-// `${info.level}: ${info.message} JSON.stringify({ ...rest }) `
-//
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(new winston.transports.Console({
-    format: winston.format.simple()
-  }));
-}
+
+const logger = caller => {
+  const l = createLogger({
+    level: 'info',
+    format: combine(
+      label({ label: path.basename(caller) }),
+      timestamp({ format: 'YYYY-MM-DD HH:mm:ss' })
+    ),
+    defaultMeta: { service: 'user-service' },
+    transports: [
+      new transports.File({ filename: 'error.log', level: 'error', format: combine(baseFromat) }),
+      new transports.File({ filename: 'combined.log', format: combine(baseFromat) })
+    ]
+  });
+
+  if (process.env.NODE_ENV !== 'production') {
+    l.add(new transports.Console({
+      format: combine(
+        colorize(),
+        baseFromat
+      )
+    }));
+  }
+  return l;
+};
 
 module.exports = logger;

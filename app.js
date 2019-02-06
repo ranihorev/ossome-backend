@@ -5,7 +5,7 @@ const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 const mongoose = require('mongoose');
 const helmet = require('helmet')
-const logger = require('./logger');
+const logger = require('./logger')(__filename);
 
 const passport = require('passport')
 const passportJWT = require("passport-jwt");

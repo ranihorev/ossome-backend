@@ -1,5 +1,5 @@
 const aws = require('aws-sdk');
-const logger = require('../../logger');
+const logger = require('../../logger')(__filename);
 const SpotifyWebApi = require('spotify-web-api-node');
 
 const s3 = new aws.S3();
