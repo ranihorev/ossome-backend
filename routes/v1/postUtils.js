@@ -13,6 +13,8 @@ module.exports.normalizeQuery = function(params) {
   let outParams = {};
   if ('user' in params)
     outParams['user._id'] = params['user'];
+  if ('post' in params)
+    outParams['_id'] = params['post'];
   if ('activity' in params)
     outParams[params['activity']] = { '$exists': true, '$ne': null };
   return outParams
