@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Post = require('../../models/Posts');
 const multer = require('multer');
-const multerS3 = require('multer-s3');
+const multerS3 = require('../multerS3');
 const randomstring = require("randomstring");
 const path = require('path');
 const axios = require('axios');
@@ -10,14 +10,15 @@ const _ = require('lodash/core');
 const logger = require('../../logger')(__filename);
 
 const postUtils = require('./postUtils');
+const sharp = require("sharp");
 
 const TMDB_IM_PATH = `https://image.tmdb.org/t/p/w92`;
 const TMDB_PATH = 'https://www.themoviedb.org';
 const GOOGLE_MAPS_PATH = 'https://www.google.com/maps/search/?q=place_id:';
 
-const generate_name = (file) => {
+const generate_name = (file, base_ext) => {
   const name = randomstring.generate({length: 16, charset: 'alphabetic'});
-  const ext = path.extname(file.originalname);
+  const ext = base_ext || path.extname(file.originalname);
   return name + ext
 };
 
@@ -30,6 +31,8 @@ const storage_local = multer.diskStorage({
   },
 });
 
+const transformer = sharp().resize({ width: 1200 }).jpeg({quality: 70,});
+
 const storage_s3 = multerS3({
   s3: postUtils.s3,
   bucket: process.env.S3_BUCKET,
@@ -38,8 +41,9 @@ const storage_s3 = multerS3({
   },
   key: function (req, file, cb) {
     const d = new Date();
-    cb(null, `${process.env.S3_BASE_PATH}/${d.getFullYear()}/${d.getMonth() + 1}/${generate_name(file)}`)
-  }
+    cb(null, `${process.env.S3_BASE_PATH}/${d.getFullYear()}/${d.getMonth() + 1}/${generate_name(file, '.jpg')}`)
+  },
+  transformer: transformer
 });
 
 const image_filter = function (req, file, callback) {
