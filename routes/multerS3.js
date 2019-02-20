@@ -167,44 +167,43 @@ function S3Storage (opts) {
   }
 }
 
+
 S3Storage.prototype._handleFile = function (req, file, cb) {
   collect(this, req, file, async function (err, opts) {
-    if (err) return cb(err)
 
-    var currentSize = 0;
-    // var stream = file.stream;
-    // if (this.transformer) {
-    //   stream = stream.pipe(this.transformer);
-    // }
+    const uploadToS3stream = () => {
+      const passT = new stream.PassThrough();
+      var params = {
+        Bucket: opts.bucket,
+        Key: opts.key,
+        ACL: opts.acl,
+        CacheControl: opts.cacheControl,
+        ContentType: opts.contentType,
+        Metadata: opts.metadata,
+        StorageClass: opts.storageClass,
+        ServerSideEncryption: opts.serverSideEncryption,
+        SSEKMSKeyId: opts.sseKmsKeyId,
+        Body: passT
+      }
 
-    var params = {
-      Bucket: opts.bucket,
-      Key: opts.key,
-      ACL: opts.acl,
-      CacheControl: opts.cacheControl,
-      ContentType: opts.contentType,
-      Metadata: opts.metadata,
-      StorageClass: opts.storageClass,
-      ServerSideEncryption: opts.serverSideEncryption,
-      SSEKMSKeyId: opts.sseKmsKeyId,
-      Body: this.transformer ? file.stream.pipe(this.transformer) : file.stream
+      if (opts.contentDisposition) {
+        params.ContentDisposition = opts.contentDisposition
+      }
+
+      return {writeStream: passT, promise: this.s3.upload(params).promise()};
     }
 
-    if (opts.contentDisposition) {
-      params.ContentDisposition = opts.contentDisposition
-    }
+    if (err) return cb(err);
 
-    var upload = this.s3.upload(params)
+    const transformer = this.transformer ? this.transformer.clone() : new stream.PassThrough();
+    const { writeStream, promise: s3Promise } = uploadToS3stream();
 
-    upload.on('httpUploadProgress', function (ev) {
-      if (ev.total) currentSize = ev.total
-    })
+    file.stream.pipe(transformer).pipe(writeStream);
 
-    upload.send(function (err, result) {
-      if (err) return cb(err)
+    transformer.on('error', (err) => cb(err));
 
+    s3Promise.then((res) => {
       cb(null, {
-        size: currentSize,
         bucket: opts.bucket,
         key: opts.key,
         acl: opts.acl,
@@ -213,11 +212,15 @@ S3Storage.prototype._handleFile = function (req, file, cb) {
         storageClass: opts.storageClass,
         serverSideEncryption: opts.serverSideEncryption,
         metadata: opts.metadata,
-        location: result.Location,
-        etag: result.ETag,
-        versionId: result.VersionId
+        location: res.Location,
+        etag: res.ETag,
+        versionId: res.VersionId
       })
-    })
+    });
+
+    s3Promise.catch( (err) => {
+      cb(err);
+    });
   })
 }
 

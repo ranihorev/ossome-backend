@@ -31,7 +31,7 @@ const storage_local = multer.diskStorage({
   },
 });
 
-const transformer = sharp().resize({ width: 1200 }).jpeg({quality: 70,});
+const transformer = sharp().resize({ width: 1200, height: 900 }).jpeg({quality: 65,});
 
 const storage_s3 = multerS3({
   s3: postUtils.s3,
