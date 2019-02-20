@@ -31,7 +31,7 @@ const storage_local = multer.diskStorage({
   },
 });
 
-const transformer = sharp().resize({ width: 1200, height: 900 }).jpeg({quality: 65,});
+// const transformer = sharp().resize({ width: 1200 }).jpeg({quality: 70,});
 
 const storage_s3 = multerS3({
   s3: postUtils.s3,
@@ -43,7 +43,7 @@ const storage_s3 = multerS3({
     const d = new Date();
     cb(null, `${process.env.S3_BASE_PATH}/${d.getFullYear()}/${d.getMonth() + 1}/${generate_name(file, '.jpg')}`)
   },
-  transformer: transformer
+  // transformer: transformer
 });
 
 const image_filter = function (req, file, callback) {

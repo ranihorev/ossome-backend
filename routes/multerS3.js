@@ -5,6 +5,7 @@ var isSvg = require('is-svg')
 var parallel = require('run-parallel')
 const sharp = require("sharp");
 
+
 function staticValue (value) {
   return function (req, file, cb) {
     cb(null, value)
@@ -195,7 +196,8 @@ S3Storage.prototype._handleFile = function (req, file, cb) {
 
     if (err) return cb(err);
 
-    const transformer = this.transformer ? this.transformer.clone() : new stream.PassThrough();
+    // let transformer = this.transformer ? clone(this.transformer) : new stream.PassThrough();
+    const transformer = sharp().resize({ width: 1200 }).jpeg({quality: 70,});
     const { writeStream, promise: s3Promise } = uploadToS3stream();
 
     file.stream.pipe(transformer).pipe(writeStream);
@@ -203,7 +205,7 @@ S3Storage.prototype._handleFile = function (req, file, cb) {
     transformer.on('error', (err) => cb(err));
 
     s3Promise.then((res) => {
-      cb(null, {
+      return cb(null, {
         bucket: opts.bucket,
         key: opts.key,
         acl: opts.acl,
@@ -219,7 +221,7 @@ S3Storage.prototype._handleFile = function (req, file, cb) {
     });
 
     s3Promise.catch( (err) => {
-      cb(err);
+      return cb(err);
     });
   })
 }
